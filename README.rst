@@ -16,7 +16,6 @@ What I have tested
 * Rackspace Instances from XenServer to Open Cloud powered by OpenStack
 * Rackspace Instances from XenClassic To Open Cloud powered by OpenStack 
 * Amazon EC2 to the Rackspace Cloud
-* Rackspace Cloud to Amazon EC2
 * KVM to Rackspace Cloud
 
 Caveats :
