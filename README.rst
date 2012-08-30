@@ -16,7 +16,6 @@ What I have tested
 * Rackspace Instances from XenServer to Open Cloud powered by OpenStack
 * Rackspace Instances from XenClassic To Open Cloud powered by OpenStack 
 * Amazon EC2 to the Rackspace Cloud
-* Rackspace Cloud to Amazon EC2
 * KVM to Rackspace Cloud
 
 Caveats :
@@ -46,3 +45,7 @@ Estimated time of Completion
  1200G        1088 Minutes
 ============  ============
 
+Do you want to see the script in Action?
+  I have a screen cast of a migration for a Live Instance to another instance. `You can check it out here`_\.
+
+.. _You can check it out here: http://ascii.io/a/1063
