@@ -320,7 +320,7 @@ if [ ! $( which rsync ) ];then
     exit 1
 else
 RSYNCVERSION=$(rsync --version | head -n 1 | awk '/version/ {print $3}')
-RSYNCVERSIONCOMP=$((echo yes | awk \"{if ($RSYNCVERSION >= 3.0.0) print $1}\")
+RSYNCVERSIONCOMP=$(echo yes | awk \"{if ($RSYNCVERSION >= 3.0.0) print $1}\")
 fi
 
 echo -e "\033[1;36mBuilding Key Based Access for the target host\033[0m"
