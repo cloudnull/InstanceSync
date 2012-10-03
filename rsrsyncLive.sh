@@ -320,7 +320,7 @@ if [ ! $( which rsync ) ];then
     exit 1
 else
 RSYNCVERSION=$(rsync --version | head -n 1 | awk '/version/ {print $3}')
-RSYNCVERSIONCOMP=$(echo yes | awk \"{if ($RSYNCVERSION >= 3.0.0) print $1}\")
+RSYNCVERSIONCOMP=$(echo yes | awk "{if ($RSYNCVERSION >= 3.0.0) print $1}")
 fi
 
 echo -e "\033[1;36mBuilding Key Based Access for the target host\033[0m"
@@ -365,17 +365,17 @@ RSYNCFLAGS='aHSzx'
 fi
 
 if [ $( which time ) ];then
-time rsync -e "ssh -i $SSHKEYTEMP -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" -$RSYNCFLAGS --progress --exclude-from="$EXCLUDEME" --exclude "$SSHAUTHKEYFILE" / root@$TIP:/;
+    time rsync -e "ssh -i $SSHKEYTEMP -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" -$RSYNCFLAGS --progress --exclude-from="$EXCLUDEME" --exclude "$SSHAUTHKEYFILE" / root@$TIP:/;
 
 	else
 	rsync -e "ssh -i $SSHKEYTEMP -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" -$RSYNCFLAGS --progress --exclude-from="$EXCLUDEME" --exclude "$SSHAUTHKEYFILE" / root@$TIP:/;
-aSi
+fi
 
 
 sleep 5
 
 echo -e "\033[1;36mNow performing Final Sweep\033[0m"
-rsync -e "ssh -i $SSHKEYTEMP -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" -c$RSYNCFLAGS --progress --exclude-from="$EXCLUDEME" --exclude "$SSHAUTHKEYFILE" / root@$TIP:/;
+    rsync -e "ssh -i $SSHKEYTEMP -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" -c$RSYNCFLAGS --progress --exclude-from="$EXCLUDEME" --exclude "$SSHAUTHKEYFILE" / root@$TIP:/;
 
 
 if [ "$AMZNKERNEL" ];then
