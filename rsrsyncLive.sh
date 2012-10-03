@@ -316,12 +316,11 @@ fi
 
 
 if [ ! $( which rsync ) ];then
-echo -e "the \033[1;36m\"rsync\"\033[0m command was not found. This means that you should install it."
-echo ''
-echo "Without \"rsync\" YOU will not see a progress bar. If you are ok with this press enter to Continue."
-echo "If you would like to see a progress bar during this potentially long process, press [ CTRL C ] to quit."
-echo ''
-read -p "Press [ Enter ] to continue or [ CTRL C ] to quit." 
+    echo -e "The \033[1;36m\"rsync\"\033[0m command was not found.\nThe automatic Installation of rsync failed so that means you NEED to install it."
+    exit 1
+else
+RSYNCVERSION=$(rsync --version | head -n 1 | awk '/version/ {print $3}')
+RSYNCVERSIONCOMP=$((echo yes | awk \"{if ($RSYNCVERSION >= 3.0.0) print $1}\")
 fi
 
 echo -e "\033[1;36mBuilding Key Based Access for the target host\033[0m"
@@ -357,19 +356,26 @@ ssh -i $SSHKEYTEMP -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no r
 
 echo -e "\033[1;36mNow performing the Copy\033[0m"
 
+if [ "$RSYNCVERSIONCOMP" == "yes" ];then 
+RSYNCFLAGS='aHEAXSzx'
+    echo "Using RSYNC <= 3.0.0 Flags."
+else 
+RSYNCFLAGS='aHSzx'
+    echo "Using RSYNC >= 2.0.0 but < 3.0.0 Flags."
+fi
 
 if [ $( which time ) ];then
-time rsync -e "ssh -i $SSHKEYTEMP -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" -rlpEAXogDtSzh -P -x --exclude-from="$EXCLUDEME" --exclude "$SSHAUTHKEYFILE" / root@$TIP:/;
+time rsync -e "ssh -i $SSHKEYTEMP -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" -$RSYNCFLAGS --progress --exclude-from="$EXCLUDEME" --exclude "$SSHAUTHKEYFILE" / root@$TIP:/;
 
 	else
-	rsync -e "ssh -i $SSHKEYTEMP -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" -rlpEAXogDtSzh -P -x --exclude-from="$EXCLUDEME" --exclude "$SSHAUTHKEYFILE" / root@$TIP:/;
-fi
+	rsync -e "ssh -i $SSHKEYTEMP -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" -$RSYNCFLAGS --progress --exclude-from="$EXCLUDEME" --exclude "$SSHAUTHKEYFILE" / root@$TIP:/;
+aSi
 
 
 sleep 5
 
 echo -e "\033[1;36mNow performing Final Sweep\033[0m"
-rsync -e "ssh -i $SSHKEYTEMP -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" -cqrlpEAXogDtSzh -P -x --exclude-from="$EXCLUDEME" --exclude "$SSHAUTHKEYFILE" / root@$TIP:/;
+rsync -e "ssh -i $SSHKEYTEMP -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" -c$RSYNCFLAGS --progress --exclude-from="$EXCLUDEME" --exclude "$SSHAUTHKEYFILE" / root@$TIP:/;
 
 
 if [ "$AMZNKERNEL" ];then
