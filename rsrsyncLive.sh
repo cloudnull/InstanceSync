@@ -22,7 +22,7 @@ SSHKEYTEMP="$TEMPDIR/tempssh.$DATE"
 SSHAUTHKEYFILE="/root/.ssh/authorized_keys"
 
 # General Exclude List; The exclude list is space Seperated
-EXCLUDELIST='/boot /dev/ /etc/conf.d/net /etc/fstab /etc/hostname /etc/HOSTNAME /etc/hosts /etc/issue /etc/init.d/nova-agent* /etc/mdadm* /etc/mtab /etc/networks* /etc/network.d/* /etc/rc.conf /etc/resolv.conf /etc/selinux/config /etc/sysconfig/network* /etc/sysconfig/network-scripts/* /etc/udev/rules.d/* /lock /net /sys /tmp /usr/sbin/nova-agent* /usr/share/nova-agent* /var/cache/yum/*'
+EXCLUDELIST='/boot /dev/ /etc/conf.d/net /etc/fstab /etc/hostname /etc/HOSTNAME /etc/hosts /etc/issue /etc/init.d/nova-agent* /etc/mdadm* /etc/mtab /etc/networks* /etc/network.d/* /etc/rc.conf /etc/resolv.conf /etc/selinux/config /etc/sysconfig/network* /etc/sysconfig/network-scripts/* /etc/ssh/ssh_host_dsa_key /etc/ssh/ssh_host_rsa_key /etc/ssh/ssh_host_dsa_key.pub /etc/ssh/ssh_host_rsa_key.pub /etc/udev/rules.d/* /lock /net /sys /tmp /usr/sbin/nova-agent* /usr/share/nova-agent* /var/cache/yum/*'
 
 # Amazon Exclude List; The exclude list is space Seperated
 AMAZONEXCLUDELIST='/etc/sysctl.conf /etc/yum.repos.d/amzn-*'
