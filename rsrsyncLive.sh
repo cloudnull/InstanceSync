@@ -83,7 +83,7 @@ function ALLDONE() {
     echo -e "I hope you enjoyed all of my hard work..."
   fi
 
-  echo "Stop by https://github.com/cloudnull or http://cloudnull.io for more 
+  echo -e "Stop by \033[1;36mhttps://github.com/cloudnull\033[0m or \033[1;36mhttp://cloudnull.io\033[0m for more 
 random and sometimes helpful tidbits..."
 
   if [ "${INFLAMMATORY}" == 1 ];then 
@@ -397,31 +397,22 @@ IP address or preserve your networking .\033[0m
 function DISTROCHECK() {
   # Check the Source Distro
   if [ -f /etc/issue ];then
-    RHEL=$(cat /etc/issue | grep -i '\(centos\)\|\(red\)\|\(fedora\)\|\(amazon\)')
-    DEBIAN=$(cat /etc/issue | grep -i '\(debian\)\|\(ubuntu\)')
-    SUSE=$(cat /etc/issue | grep -i '\(suse\)')
-    ARCH=$(cat /etc/issue | grep -i '\(arch\)')
+    if [ "$(grep -i '\(centos\)\|\(red\)\|\(fedora\)\|\(amazon\)' /etc/issue)"  ]; then
+      WHENRHEL
+    elif [ "$(grep -i '\(debian\)\|\(ubuntu\)' /etc/issue)" ];then
+      WHENDEBIAN
+    elif [ "$(grep -i '\(suse\)' /etc/issue)" ];then
+      WHENSUSE
+    elif [ "$(grep -i '\(arch\)')" ];then
+      WHENARCH
+    fi
   elif [ -f /etc/gentoo-release ];then
-    GENTOO=$(cat /etc/gentoo-release | grep -i '\(gentoo\)')
+    WHENARCH
   else 
     echo -e "WARNING!! I could not determine your OS Type. This Application has 
 only been tested on : 
 \033[1;31mDebian, Ubuntu, Fedora, CentOS, RHEL, SUSE, Gentoo, and Arch\033[0m
 "
-  fi
-
-  # Do Distro Things
-  if [ -n "${RHEL}" ];then
-    WHENRHEL
-  elif [ -n "${DEBIAN}" ];then 
-    WHENDEBIAN
-  elif [ -n "${SUSE}" ];then 
-    WHENSUSE
-  elif [ -n "${GENTOO}" ];then
-    WHENGENTOO
-  elif [ -n "${ARCH}" ];then
-    WHENARCH
-  else
     WHENUNKNOWN
   fi
 }
@@ -436,11 +427,13 @@ function RSYNCCHECKANDSET() {
     exit 1
   else
     RSYNCVERSION=$(rsync --version | grep -E "version" | awk '{print $3}' | awk -F'.' '{print $1}')
-    RSYNCVERSIONCOMP=$(echo yes | awk "{if (${RSYNCVERSION} >= 3.0.0) print $1}")
+    if [ "${RSYNCVERSION}" -ge "3" ];then
+      RSYNCVERSIONCOMP="yes"
+    fi
   fi
   
   # Set RSYNC Flags
-  if [ "${RSYNCVERSION}COMP" == "yes" ];then 
+  if [ "${RSYNCVERSIONCOMP}" == "yes" ];then 
     RSYNCFLAGS='aHEAXSzx'
     echo "Using RSYNC <= 3.0.0 Flags."
   else 
