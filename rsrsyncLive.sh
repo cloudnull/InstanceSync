@@ -5,14 +5,16 @@
 # - License      : GPLv3
 # - author       : Kevin Carter
 # - date         : 2013-10-26
-# - version      : 1.3
+# - version      : 1.4
 # - usage        : bash rsrsyncLive.sh
 # - OS Supported : Ubuntu, Debian, SUSE, Gentoo, RHEL, CentOS, Arch
 # ==============================================================================
 
+
+
 # Trap Errors and or Exits
 trap "CONTROL_C" SIGINT
-trap "EXIT_ERROR Line Number: ${LINENO} Message: ${$?}" ERR
+trap "EXIT_ERROR Line Number: ${LINENO} Message: $?" ERR
 
 # Set modes
 set -u
@@ -41,7 +43,7 @@ function CONTROL_C() {
 \033[1;36mYou Pressed [ CTRL C ] \033[0m
 "
   QUIT
-  if [ "${INFLAMMATORY}" == 1 ];then 
+  if [ "${INFLAMMATORY}" == "True" ];then 
     echo -e "You obviously screwed something up or you got cold feet..."
   fi
 
@@ -79,14 +81,16 @@ $@
 function ALLDONE() {
   echo "all Done."
 
-  if [ "${INFLAMMATORY}" == 1 ];then 
+  if [ "${INFLAMMATORY}" == "True" ];then 
     echo -e "I hope you enjoyed all of my hard work..."
   fi
 
-  echo -e "Stop by \033[1;36mhttps://github.com/cloudnull\033[0m or \033[1;36mhttp://cloudnull.io\033[0m for more 
-random and sometimes helpful tidbits..."
+  echo -e "Stop by \033[1;36mhttps://github.com/cloudnull\033[0m or 
+\033[1;36mhttp://cloudnull.io\033[0m for more 
+random and sometimes helpful tidbits...
+"
 
-  if [ "${INFLAMMATORY}" == 1 ];then 
+  if [ "${INFLAMMATORY}" == "True" ];then 
     echo -e "And if you feel so Inclined you can buy me a \033[1;33mBeer\033[0m,
 I perfer cold \033[1;33mBeer\033[0m But I will normally drink anything.  :)
 "
@@ -104,7 +108,7 @@ function ISTHISAMAZON() {
     AMZNKERNEL="FALSE"
   fi
 
-  # Check for known Amazon Python Modules
+  # Check for known Amazon BOTO Python Modules
   CHECKAWSBOTO=$(echo -e "
 try:
   import boto.roboto.awsqueryservice
@@ -114,6 +118,7 @@ else:
   print 'TRUE'
 " | python)
 
+  # Check for known BOTO Python Modules
   CHECKBOTO=$(echo -e "
 try:
   import boto
@@ -128,27 +133,29 @@ else:
 The \033[1;33mAmazon AMI\033[0m Linux Distribution.
 "
 
-    if [ "${INFLAMMATORY}" == 1 ];then 
+    if [ "${INFLAMMATORY}" == "True" ];then 
       echo -e "Which must really suck..."
     fi
 
-    echo -e "Is this an instance that is coming from \033[1;33mAmazon EC2\033[0m?"
+    echo -e "Is this instance coming from \033[1;33mAmazon EC2\033[0m?"
     read -p "Please Answer yes or no : " MIGRATEEC2
     MIGRATEEC2=${MIGRATEEC2:-"no"}
     case ${MIGRATEEC2} in
       yes)
         echo -e "Due to \033[1;33mAmazon EC2\033[0m SSH Security already in 
-place. Access to your Instance POST migration will use your current Amazon Method.
-Which may involve PEM files, keys or other assorted means.
+place. Access to your Instance POST migration will use your current Amazon
+Method. Which may involve PEM files, keys or other assorted means.
 "
 
-        if [ "${INFLAMMATORY}" == 1 ];then 
+        if [ "${INFLAMMATORY}" == "True" ];then 
           echo -e "Bottom Line, If it worked before it should work again..."
         fi
 
         # Adding additional Excludes, for Amazon
-        echo -e "We are adding additional Excludes to accomodate \033[1;33mAmazon EC2\033[0m Instances."
-        if [ "${INFLAMMATORY}" == 1 ];then 
+        echo -e "We are adding additional Excludes to accommodate
+\033[1;33mAmazon EC2\033[0m Instances."
+
+        if [ "${INFLAMMATORY}" == "True" ];then 
           echo -e "Which by the way are junk..."
         fi
 
@@ -160,14 +167,14 @@ Which may involve PEM files, keys or other assorted means.
 
         sleep 5
 
-        if [ "${AMZNKERNEL}" ];then
+        if [ "${AMZNKERNEL}" == "TRUE" ];then
           echo -e "Based on the \033[1;33m${KERNELTYPE}\033[0m Kernel. You 
-seem to be using an Instance of \033[1;33mAmazon AMI Linux\033[0m. If you want to 
-continue you can, but there may be complications. Your best bet for guaranteed 
-success is to manually migrate your data.
+seem to be using an Instance of \033[1;33mAmazon AMI Linux\033[0m. If you want 
+to continue you can, but there may be complications. Your best bet for 
+guaranteed success is to manually migrate your data.
 "
 
-          if [ "${INFLAMMATORY}" == 1 ];then 
+          if [ "${INFLAMMATORY}" == "True" ];then 
             echo -e "The reason for this is that you have chosen a terrible 
 distribution of Linux which really is nothing more than a clone of another 
 terrible Linux Distribution... RHEL...but rest assured I did test this action 
@@ -175,11 +182,12 @@ thoroughly... even if I did hate every minute of it.
 "
           fi
 
-          echo -e "I have Great success in migrating \033[1;33mAmazon AMI Linux\033[0m 
-to \033[1;31mCentOS/RHEL\033[0m If your Target Server is a \033[1;31mCentOS/RHEL\033[0m 
-you should be fine. While I have had a lot of Success moving these types of Instances
-around, You should also be aware that \033[1;33mAmazon AMI Linux\033[0m is proprietary
-and it could have issues moving to a more Open Source Platform.
+          echo -e "I have Great success in migrating \033[1;33mAmazon AMI
+Linux\033[0m to \033[1;31mCentOS/RHEL\033[0m If your Target Server is a
+\033[1;31mCentOS/RHEL\033[0m you should be fine. While I have had a lot of 
+Success moving these types of Instances around, You should also be aware that
+\033[1;33mAmazon AMI Linux\033[0m is proprietary and it could have issues moving
+to a more Open Source Platform.
 "
 
           read -p "Press [Enter] to Continue or [ CTRL -C ] to quit."
@@ -187,7 +195,7 @@ and it could have issues moving to a more Open Source Platform.
       ;;
 
       no)
-        echo -e "Sounds Good, I did not want to deal with \033[1;33mAmazon\033[0m anyway."
+        echo -e "Sounds Good, I don't like \033[1;33mAmazon\033[0m anyway."
       ;;
 
       *)
@@ -202,17 +210,29 @@ and it could have issues moving to a more Open Source Platform.
 # Amazon Specific Processes 
 # ==============================================================================
 function AMAZONPROCESSES() {
-  if [ "${AMZNKERNEL}" ];then
+  if [ "${AMZNKERNEL}" == "TRUE" ];then
     echo -e "\033[1;36mNow performing Amazon Specific Processes\033[0m"
-    HOSTTARGET=$(ssh -i ${SSHKEYTEMP} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${TIP} "echo \$( head -1 /etc/issue )")
-    ssh -i ${SSHKEYTEMP} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${TIP} "bash postopfix.sh";
-    ssh -i ${SSHKEYTEMP} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${TIP} "yum -y install initscripts"
+    HOSTTARGET=$(ssh -i ${SSHKEYTEMP} -o UserKnownHostsFile=/dev/null \
+                                      -o StrictHostKeyChecking=no root@${TIP} \
+                                      "echo \$( head -1 /etc/issue )")
+
+    ssh -i ${SSHKEYTEMP} -o UserKnownHostsFile=/dev/null \
+                         -o StrictHostKeyChecking=no root@${TIP} \
+                         "bash postopfix.sh";
+    ssh -i ${SSHKEYTEMP} -o UserKnownHostsFile=/dev/null \
+                         -o StrictHostKeyChecking=no root@${TIP} \
+                         "yum -y install initscripts"
+
     if [ "$(echo ${HOSTTARGET} | grep -i centos)" ];then
       TARGETOSTYPE="centos"
-      ssh -i ${SSHKEYTEMP} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${TIP} "yum -y install ${TARGETOSTYPE}-release"
+      ssh -i ${SSHKEYTEMP} -o UserKnownHostsFile=/dev/null \
+                           -o StrictHostKeyChecking=no root@${TIP} \
+                           "yum -y install ${TARGETOSTYPE}-release"
     elif [ "$(echo ${HOSTTARGET} | grep -i redhat)" ];then
       TARGETOSTYPE="redhat"
-      ssh -i ${SSHKEYTEMP} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${TIP} "yum -y install ${TARGETOSTYPE}-release"
+      ssh -i ${SSHKEYTEMP} -o UserKnownHostsFile=/dev/null \
+                           -o StrictHostKeyChecking=no root@${TIP} \
+                           "yum -y install ${TARGETOSTYPE}-release"
     else
       TARGETOSTYPE="YOUR-TARGET-DISTRO"
       echo "The Target Distro did not match what I was looking for"
@@ -225,9 +245,11 @@ function AMAZONPROCESSES() {
 # Post Migration script for Amazon AMI Linux
 # ==============================================================================
 function AMAZONPOSTPROCESSES() {
-  if [ "${AMZNKERNEL}" ];then
-    echo -e "# Post Migration Script
-echo \"\$( cat /etc/issue | head -1 | awk '{print \$3}' | awk -F '.' '{print \$1}' )\" > /etc/yum/vars/releasever;
+  if [ "${AMZNKERNEL}" == "TRUE" ];then
+    echo -e "#!/usr/bin/env bash
+# Post Migration Script
+echo \"\$( cat /etc/issue | head -n 1 | awk '{print \$3}' | awk -F '.' '{print \$1}' )\" > /etc/yum/vars/releasever;
+
 for pkg in epel-release system-release sysvinit perl-io perl-file perl-http perl-lwp perl-net aws perl-libwww;do
   if [ \"\$(rpm -qa | grep -iE \$pkg )\" ];then
     rpm -e --nodeps \$pkg
@@ -238,11 +260,11 @@ done" | tee /tmp/postopfix.sh
 }
 
 function AMAZONWARNING() {
-  if [ "${AMZNKERNEL}" ];then
+  if [ "${AMZNKERNEL}" == "TRUE" ];then
     echo -e "Being that this instance was migrating from an \033[1;33mAmazon EC2\033[0m
   You should login to the Target Server and make any configuration changes that are needed.
   I have tried to be thorough but some times things happen which can cause incompatibilities."
-    if [ "${INFLAMMATORY}" == 1 ];then 
+    if [ "${INFLAMMATORY}" == "True" ];then 
       echo -e "In short if its broke, don't cry...
   "
     fi
@@ -269,10 +291,11 @@ function GETDRIVE2() {
   echo -e "
 Here you Must Specify the \033[1;33mTarget\033[0m mount point.  This is 
 \033[1;33mA MOUNT\033[0m Point. Under Normal Rackspace Circumstances this drive
-would be \"/\" or \"/dev/xvdb1\". Remember, there is no way to check that the directory 
-or drive exists. This means we are relying on \033[1;33mYOU\033[0m to type correctly.
+would be \"/\" or \"/dev/xvdb1\". Remember, there is no way to check that the 
+directory or drive exists. This means we are relying on \033[1;33mYOU\033[0m to
+type correctly.
 "
-  read -p "Specify Destination Drive or press [Enter] to accept the Rackspace Cloud Servers Default : " DRIVE2
+  read -p "Specify Destination Drive or press [Enter] for the Default : " DRIVE2
   DRIVE2=${DRIVE2:-"/dev/xvdb1"}
 }
 
@@ -281,13 +304,18 @@ or drive exists. This means we are relying on \033[1;33mYOU\033[0m to type corre
 # ==============================================================================
 function GETTIP() {
   MAX_RETRIES=${MAX_RETRIES:-5}
-  read -p "If you are ready to proceed please enter your Target IP address : " TIP
+  RETRY_COUNT=0
+  read -p "If you are ready to proceed enter your Target IP address : " TIP
   TIP=${TIP:-""}
   if [ -z "${TIP}" ];then
     echo "No IP was provided, please try again"
     unset TIP
-    MAX_RETRIES=$((${MAX_RETRIES}+1))
-    GETTIP
+    RETRY_COUNT=$((${RETRY_COUNT}+1))
+    if [ ${RETRY_COUNT} -ge ${MAX_RETRIES} ];then
+      EXIT_ERROR "Hit maximum number of retries, giving up."
+    else
+      GETTIP
+    fi
   else
     unset MAX_RETRIES
   fi
@@ -297,7 +325,7 @@ function GETTIP() {
 # When RHEL-ish Distros are detected
 # ==============================================================================
 function WHENRHEL() {
-  echo -e "\033[1;31mRHEL Based System Detected\033[0m Installing rsync Package."
+  echo -e "\033[1;31mRHEL Based System Detected\033[0m Installing rsync."
 
   yum -y install rsync
 
@@ -305,7 +333,7 @@ function WHENRHEL() {
 yum -y install rsync
 " | tee /tmp/intsalldeps.sh
 
-  if [ "${INFLAMMATORY}" == 1 ];then 
+  if [ "${INFLAMMATORY}" == "True" ];then 
     echo -e "I hope you realize that you have made a BAD choice with the RHEL 
 variety, RHEL is terrible, you would be better off doing a manual migration.
 But I am going ahead with the deployment so dont worry. Linux. due to your 
@@ -330,7 +358,7 @@ apt-get update > /dev/null 2>&1
 apt-get -y install rsync > /dev/null 2>&1
 " | tee /tmp/intsalldeps.sh
 
-if [ "${INFLAMMATORY}" == 1 ];then 
+if [ "${INFLAMMATORY}" == "True" ];then 
     echo -e "Great choice by choosing a Debian Based Distro. 
 The Debian way is by far the best way."; 
     sleep 1
@@ -346,7 +374,7 @@ function WHENSUSE() {
 zypper -n in rsync
 " | tee /tmp/intsalldeps.sh
 
-  if [ "${INFLAMMATORY}" == 1 ];then 
+  if [ "${INFLAMMATORY}" == "True" ];then 
     echo -e "I like SUSE Linux, and you should too.
 Its not as good as Debian But WAY  better than ANYTHING RHEL.
 "
@@ -358,7 +386,7 @@ Its not as good as Debian But WAY  better than ANYTHING RHEL.
 # ==============================================================================
 function WHENGENTOO() {
   echo -e "\033[1;31mGentoo Based System Detected\033[0m"
-  if [ "${INFLAMMATORY}" == 1 ];then 
+  if [ "${INFLAMMATORY}" == "True" ];then 
     echo -e "Gentoo is nice if you are into that sort of thing. But I have to 
 ask, WHY THE HELL are you using this script to move a Gentoo image? As a Gentoo 
 User, you should have more pride and do it all by hand...
@@ -371,7 +399,7 @@ User, you should have more pride and do it all by hand...
 # ==============================================================================
 function WHENARCH() {
   echo -e "\033[1;31mArch Based System Detected\033[0m"
-  if [ "${INFLAMMATORY}" == 1 ];then 
+  if [ "${INFLAMMATORY}" == "True" ];then 
     echo -e "I have never meet anyone who ram a production ready Arch Linux 
 Anything... And you think your different...
 "
@@ -386,7 +414,7 @@ function WHENUNKNOWN() {
   echo -e "\033[1;31mLogin to the target OS while in rescue mode, and fix the 
 IP address or preserve your networking .\033[0m
 "
-  if [ "${INFLAMMATORY}" == 1 ];then 
+  if [ "${INFLAMMATORY}" == "True" ];then 
       echo -e "Basically I have no IDEA what to do with you..."
       sleep 2
   fi
@@ -426,7 +454,9 @@ function RSYNCCHECKANDSET() {
   Installation of rsync failed so that means you NEED to install it."
     exit 1
   else
-    RSYNCVERSION=$(rsync --version | grep -E "version" | awk '{print $3}' | awk -F'.' '{print $1}')
+    RSYNCVERSIONLINE=$(rsync --version | grep -E "version\ [0-9].[0-9].[0-9]")
+    RSYNCVERSIONNUM=$(echo ${RSYNCVERSIONLINE} | awk '{print $3}')
+    RSYNCVERSION=$(echo ${RSYNCVERSIONNUM} | awk -F'.' '{print $1}')
     if [ "${RSYNCVERSION}" -ge "3" ];then
       RSYNCVERSIONCOMP="yes"
     fi
@@ -454,16 +484,17 @@ function KEYANDDEPSEND() {
   ssh-copy-id -i ${SSHKEYTEMP} root@${TIP}
 
   if [ -f /tmp/intsalldeps.sh ];then
-    echo -e "Passing the RSYNC Dependency to the \033[1;33mTARGET\033[0m Server."
+    echo -e "Passing RSYNC Dependencies to the \033[1;33mTARGET\033[0m Server."
     scp -i ${SSHKEYTEMP} /tmp/intsalldeps.sh root@${TIP}:/root/
   fi
 }
 
 function RUNRSYNCCOMMAND() {
   MAX_RETRIES=${MAX_RETRIES:-5}
+  RETRY_COUNT=0
 
-  while [ $? -ne 0 -a ${RETRY} -lt ${MAX_RETRIES} ];do
-    RETRY=$((${RETRY}+1))
+  while [ $? -ne 0 -a ${RETRY_COUNT} -lt ${MAX_RETRIES} ];do
+    RETRY_COUNT=$((${RETRY_COUNT}+1))
     if [ "$(which time)" ];then
       time ${RSYNC_CMD}
     else
@@ -471,7 +502,7 @@ function RUNRSYNCCOMMAND() {
     fi
   done
   
-  if [ $i -eq ${MAX_RETRIES} ];then
+  if [ ${RETRY_COUNT} -ge ${MAX_RETRIES} ];then
     EXIT_ERROR "Hit maximum number of retries, giving up."
   fi
 
@@ -481,20 +512,32 @@ function RUNRSYNCCOMMAND() {
 
 function RUNMAINPROCESS() {
   echo -e "\033[1;36mNow performing the Copy\033[0m"
-  RSYNC_CMD="rsync -e \"ssh -i ${SSHKEYTEMP} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no\" -${RSYNCFLAGS} --progress --exclude-from=\"${EXCLUDEME}\" --exclude \"${SSHAUTHKEYFILE}\" / root@${TIP}:/"
+  RSYNC_CMD="rsync -e \"ssh -i ${SSHKEYTEMP} -o UserKnownHostsFile=/dev/null \
+                                             -o StrictHostKeyChecking=no\" \
+                                             -${RSYNCFLAGS} \
+                                             --progress \
+                                             --exclude-from=\"${EXCLUDEME}\" \
+                                             --exclude \"${SSHAUTHKEYFILE}\" \
+                                             / root@${TIP}:/"
   RUNRSYNCCOMMAND
 
   echo "Resting for 5 seconds..."
   sleep 5
 
   echo -e "\033[1;36mNow performing Final Sweep\033[0m"
-  RSYNC_CMD="rsync -e \"ssh -i ${SSHKEYTEMP} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no\" -c${RSYNCFLAGS} --progress --exclude-from=\"${EXCLUDEME}\" --exclude \"${SSHAUTHKEYFILE}\" / root@${TIP}:/"
+  RSYNC_CMD="rsync -e \"ssh -i ${SSHKEYTEMP} -o UserKnownHostsFile=/dev/null \
+                                             -o StrictHostKeyChecking=no\" \
+                                             -c${RSYNCFLAGS} \
+                                             --progress \
+                                             --exclude-from=\"${EXCLUDEME}\" \
+                                             --exclude \"${SSHAUTHKEYFILE}\" \
+                                             / root@${TIP}:/"
   RUNRSYNCCOMMAND
 }
 
 # Run Script
 # ==============================================================================
-INFLAMMATORY=${INFLAMMATORY:-0}
+INFLAMMATORY=${INFLAMMATORY:-"False"}
 
 # The Date as generated by the Source System
 DATE=$(date +%y%m%d%H)
@@ -510,12 +553,13 @@ SSHAUTHKEYFILE='/root/.ssh/authorized_keys'
 
 # General Exclude List; The exclude list is space Seperated
 EXCLUDELIST='/boot /dev/ /etc/conf.d/net /etc/fstab /etc/hostname /etc/HOSTNAME 
-/etc/hosts /etc/issue /etc/init.d/nova-agent* /etc/mdadm* /etc/mtab /etc/network* 
-/etc/network/* /etc/networks* /etc/network.d/* /etc/rc.conf /etc/resolv.conf 
-/etc/selinux/config /etc/sysconfig/network* /etc/sysconfig/network-scripts/* 
-/etc/ssh/ssh_host_dsa_key /etc/ssh/ssh_host_rsa_key /etc/ssh/ssh_host_dsa_key.pub 
+/etc/hosts /etc/issue /etc/init.d/nova-agent* /etc/mdadm* /etc/mtab 
+/etc/network* /etc/network/* /etc/networks* /etc/network.d/* /etc/rc.conf 
+/etc/resolv.conf /etc/selinux/config /etc/sysconfig/network* 
+/etc/sysconfig/network-scripts/* /etc/ssh/ssh_host_dsa_key 
+/etc/ssh/ssh_host_rsa_key /etc/ssh/ssh_host_dsa_key.pub 
 /etc/ssh/ssh_host_rsa_key.pub /etc/udev/rules.d/* /lock /net /sys /tmp 
-/usr/sbin/nova-agent* /usr/share/nova-agent* /var/cache/yum/*'
+/usr/sbin/nova-agent* /usr/share/nova-agent* /var/cache/yum/* '
 
 # Amazon Exclude List; The exclude list is space Seperated
 AMAZONEXCLUDELIST='/etc/sysctl.conf /etc/yum.repos.d/amzn-*'
@@ -534,7 +578,7 @@ CHECKFORROOT
 # Clear the screen to get ready for work
 clear
 
-if [ "${INFLAMMATORY}" == 1 ];then 
+if [ "${INFLAMMATORY}" == "True" ];then 
   echo -e "Inflammatory mode has been enabled... 
 The application will now be really opinionated...
 \033[1;33mYOU\033[0m have been warned...
@@ -543,7 +587,8 @@ fi
 
   echo -e "This Utility Moves a \033[1;36mLIVE\033[0m System to an other System.
 This application will work on \033[1;36mAll\033[0m Linux systems using RSYNC.
-Before performing this action you \033[1;35mSHOULD\033[0m be in a screen session.
+Before performing this action you \033[1;35mSHOULD\033[0m be in a screen
+session.
 "
 
 sleep 1
@@ -585,7 +630,9 @@ sed '$ d' /tmp/known_hosts > /root/.ssh/known_hosts
 rm -f /tmp/known_hosts
 
 echo -e "Running Dependency Script on the \033[1;33mTARGET\033[0m Server."
-ssh -i ${SSHKEYTEMP} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${TIP} "bash intsalldeps.sh" > /dev/null 2>&1
+ssh -i ${SSHKEYTEMP} -o UserKnownHostsFile=/dev/null \
+                     -o StrictHostKeyChecking=no root@${TIP} \
+                     "bash intsalldeps.sh" > /dev/null 2>&1
 
 RUNMAINPROCESS
 
@@ -593,7 +640,9 @@ AMAZONPROCESSES
 
 echo -e "\033[1;36mThe target Instance is being rebooted\033[0m"
 
-ssh -i ${SSHKEYTEMP} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${TIP} "shutdown -r now";
+ssh -i ${SSHKEYTEMP} -o UserKnownHostsFile=/dev/null \
+                     -o StrictHostKeyChecking=no root@${TIP} \
+                     "shutdown -r now";
 
 echo -e "If you were copying something that was not a Rackspace Cloud Server, 
 You may need to ensure that your setting are correct, and the target is healthy
@@ -601,8 +650,9 @@ You may need to ensure that your setting are correct, and the target is healthy
 
 AMAZONWARNING
 
-echo -e "Other wise you are good to go, and the target server should have been rebooted.
-If all is well, you should now be able to enjoy your newly cloned Virtual Instance.
+echo -e "Other wise you are good to go, and the target server should have been 
+rebooted. If all is well, you should now be able to enjoy your newly cloned 
+Virtual Instance.
 "
 
 # Say something nice
