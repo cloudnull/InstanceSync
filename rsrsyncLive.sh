@@ -14,7 +14,7 @@
 
 # Trap Errors and or Exits
 trap "CONTROL_C" SIGINT
-trap "EXIT_ERROR Line Number: ${LINENO} Message: $?" ERR
+trap "EXIT_ERROR Line Number: ${LINENO} Exit Code: $?" ERR
 
 # Set modes
 set -u
@@ -61,7 +61,7 @@ function QUIT() {
   echo 'Removing Temp Files'
   GENFILES="/tmp/intsalldeps.sh /tmp/known_hosts /tmp/postopfix.sh"
 
-  for temp_file in ${EXCLUDEME} ${GENFILES};do 
+  for temp_file in ${EXCLUDE_FILE} ${GENFILES} ${SSH_KEY_TEMP};do 
     [ -f ${temp_file} ] && rm ${temp_file}
   done
 }
@@ -69,9 +69,9 @@ function QUIT() {
 function EXIT_ERROR() {
   # Print Messages
   echo -e "ERROR! Sorry About that... 
-Here is what I know:
-$@
+Here is what I know: $@
 "
+  QUIT
   exit 1
 }
 
@@ -103,32 +103,32 @@ I perfer cold \033[1;33mBeer\033[0m But I will normally drink anything.  :)
 function ISTHISAMAZON() {
   KERNELTYPE=$(uname -r | head -n 1)
   if [ "$(echo "${KERNELTYPE}" | grep -i amzn)" ];then
-    AMZNKERNEL="TRUE"
+    AK="YES"
   else
-    AMZNKERNEL="FALSE"
+    AK="FALSE"
   fi
 
   # Check for known Amazon BOTO Python Modules
-  CHECKAWSBOTO=$(echo -e "
+  AB=$(echo -e "
 try:
   import boto.roboto.awsqueryservice
 except ImportError:
   print 'FAIL'
 else:
-  print 'TRUE'
+  print 'YES'
 " | python)
 
   # Check for known BOTO Python Modules
-  CHECKBOTO=$(echo -e "
+  CB=$(echo -e "
 try:
   import boto
 except ImportError, e:
   print 'FAIL'
 else:
-  print 'TRUE'
+  print 'YES'
 " | python)
 
-  if [ "${AMZNKERNEL}" == "TRUE" ] || [ "${CHECKAWSBOTO}" == "TRUE" ] || [ "${CHECKBOTO}" == "TRUE" ];then
+  if [ "${AK}" == "YES" ] || [ "${AB}" == "YES" ] || [ "${CB}" == "YES" ];then
     echo -e "It seems you are currently on an Amazon Server using 
 The \033[1;33mAmazon AMI\033[0m Linux Distribution.
 "
@@ -153,21 +153,22 @@ Method. Which may involve PEM files, keys or other assorted means.
 
         # Adding additional Excludes, for Amazon
         echo -e "We are adding additional Excludes to accommodate
-\033[1;33mAmazon EC2\033[0m Instances."
+\033[1;33mAmazon EC2\033[0m Instances.
+"
 
         if [ "${INFLAMMATORY}" == "True" ];then 
           echo -e "Which by the way are junk..."
         fi
 
-        AMAZONEXCLUDEVAR=$(echo ${AMAZONEXCLUDELIST} | sed 's/\ /\\n/g')
-        echo -e ${AMAZONEXCLUDEVAR} >> ${EXCLUDEME}
-        find / -name '*cloudinit*' >> ${EXCLUDEME}
-        find / -name '*cloud-init*' >> ${EXCLUDEME}
-        find / -name '*amazon*' >> ${EXCLUDEME}
+        AMAZONEXCLUDEVAR=$(echo ${AMAZONEXCLUDE_LIST} | sed 's/\ /\\n/g')
+        echo -e ${AMAZONEXCLUDEVAR} | tee -a ${EXCLUDE_FILE}
+        find / -name '*cloudinit*' | tee -a ${EXCLUDE_FILE}
+        find / -name '*cloud-init*' | tee -a ${EXCLUDE_FILE}
+        find / -name '*amazon*' | tee -a ${EXCLUDE_FILE}
 
         sleep 5
 
-        if [ "${AMZNKERNEL}" == "TRUE" ];then
+        if [ "${AK}" == "YES" ];then
           echo -e "Based on the \033[1;33m${KERNELTYPE}\033[0m Kernel. You 
 seem to be using an Instance of \033[1;33mAmazon AMI Linux\033[0m. If you want 
 to continue you can, but there may be complications. Your best bet for 
@@ -210,63 +211,67 @@ to a more Open Source Platform.
 # Amazon Specific Processes 
 # ==============================================================================
 function AMAZONPROCESSES() {
-  if [ "${AMZNKERNEL}" == "TRUE" ];then
+  if [ "${AK}" == "YES" ];then
     echo -e "\033[1;36mNow performing Amazon Specific Processes\033[0m"
-    HOSTTARGET=$(ssh -i ${SSHKEYTEMP} -o UserKnownHostsFile=/dev/null \
-                                      -o StrictHostKeyChecking=no root@${TIP} \
-                                      "echo \$( head -1 /etc/issue )")
+    T_HOST=$(ssh -i ${SSH_KEY_TEMP} -o UserKnownHostsFile=/dev/null \
+                                    -o StrictHostKeyChecking=no root@${TIP} \
+                                    "echo \$( head -1 /etc/issue )")
 
-    ssh -i ${SSHKEYTEMP} -o UserKnownHostsFile=/dev/null \
-                         -o StrictHostKeyChecking=no root@${TIP} \
-                         "bash postopfix.sh";
-    ssh -i ${SSHKEYTEMP} -o UserKnownHostsFile=/dev/null \
-                         -o StrictHostKeyChecking=no root@${TIP} \
-                         "yum -y install initscripts"
+    ssh -i ${SSH_KEY_TEMP} -o UserKnownHostsFile=/dev/null \
+                           -o StrictHostKeyChecking=no root@${TIP} \
+                           "bash postopfix.sh";
 
-    if [ "$(echo ${HOSTTARGET} | grep -i centos)" ];then
-      TARGETOSTYPE="centos"
-      ssh -i ${SSHKEYTEMP} -o UserKnownHostsFile=/dev/null \
+    ssh -i ${SSH_KEY_TEMP} -o UserKnownHostsFile=/dev/null \
                            -o StrictHostKeyChecking=no root@${TIP} \
-                           "yum -y install ${TARGETOSTYPE}-release"
-    elif [ "$(echo ${HOSTTARGET} | grep -i redhat)" ];then
-      TARGETOSTYPE="redhat"
-      ssh -i ${SSHKEYTEMP} -o UserKnownHostsFile=/dev/null \
-                           -o StrictHostKeyChecking=no root@${TIP} \
-                           "yum -y install ${TARGETOSTYPE}-release"
+                           "yum -y install initscripts"
+
+    if [ "$(echo ${T_HOST} | grep -i centos)" ];then
+      TARGET_OS_TYPE="centos"
+      ssh -i ${SSH_KEY_TEMP} -o UserKnownHostsFile=/dev/null \
+                             -o StrictHostKeyChecking=no root@${TIP} \
+                             "yum -y install ${TARGET_OS_TYPE}-release"
+    elif [ "$(echo ${T_HOST} | grep -i redhat)" ];then
+      TARGET_OS_TYPE="redhat"
+      ssh -i ${SSH_KEY_TEMP} -o UserKnownHostsFile=/dev/null \
+                             -o StrictHostKeyChecking=no root@${TIP} \
+                             "yum -y install ${TARGET_OS_TYPE}-release"
     else
-      TARGETOSTYPE="YOUR-TARGET-DISTRO"
-      echo "The Target Distro did not match what I was looking for"
-      echo "You need to login to the Target Instance and run :"
-      echo "yum install ${TARGETOSTYPE}-release"
+      TARGET_OS_TYPE="YOUR-TARGET-DISTRO"
+      echo -e "The Target Distro did not match what I was looking for
+You need to login to the Target Instance and run :
+yum install ${TARGET_OS_TYPE}-release"
     fi
-  fi 
+  fi
 }
 
 # Post Migration script for Amazon AMI Linux
 # ==============================================================================
 function AMAZONPOSTPROCESSES() {
-  if [ "${AMZNKERNEL}" == "TRUE" ];then
-    echo -e "#!/usr/bin/env bash
-# Post Migration Script
-echo \"\$( cat /etc/issue | head -n 1 | awk '{print \$3}' | awk -F '.' '{print \$1}' )\" > /etc/yum/vars/releasever;
-
-for pkg in epel-release system-release sysvinit perl-io perl-file perl-http perl-lwp perl-net aws perl-libwww;do
+  if [ "${AK}" == "YES" ];then
+    echo -e "# Post Migration Script
+REL=\"/etc/yum/vars/releasever\"
+VER=\"\$( cat /etc/issue | head -n 1 | awk '{print \$3}' )\"
+echo \"\$( echo \${VER} | awk -F '.' '{print \$1}' )\" | tee \${REL}
+PKS=\"epel-release system-release sysvinit perl-io perl-file perl-http \"
+PKS+=\"perl-lwp perl-net aws perl-libwww\"
+for pkg in \${PKS};do
   if [ \"\$(rpm -qa | grep -iE \$pkg )\" ];then
     rpm -e --nodeps \$pkg
   fi
 done" | tee /tmp/postopfix.sh
-    scp -i ${SSHKEYTEMP} /tmp/postopfix.sh root@${TIP}:/root/
+    scp -i ${SSH_KEY_TEMP} /tmp/postopfix.sh root@${TIP}:/root/
   fi
 }
 
 function AMAZONWARNING() {
-  if [ "${AMZNKERNEL}" == "TRUE" ];then
-    echo -e "Being that this instance was migrating from an \033[1;33mAmazon EC2\033[0m
-  You should login to the Target Server and make any configuration changes that are needed.
-  I have tried to be thorough but some times things happen which can cause incompatibilities."
+  if [ "${AK}" == "YES" ];then
+    echo -e "Being that this instance was migrating from an 
+\033[1;33mAmazon EC2\033[0m You should login to the Target Server and make any
+configuration changes that are needed. I have tried to be thorough but some
+times things happen which can cause incompatibilities.
+"
     if [ "${INFLAMMATORY}" == "True" ];then 
-      echo -e "In short if its broke, don't cry...
-  "
+      echo -e "In short if its broke, don't cry...\n"
     fi
   fi
 }
@@ -425,7 +430,9 @@ IP address or preserve your networking .\033[0m
 function DISTROCHECK() {
   # Check the Source Distro
   if [ -f /etc/issue ];then
-    if [ "$(grep -i '\(centos\)\|\(red\)\|\(fedora\)\|\(amazon\)' /etc/issue)"  ]; then
+    if [ "$(grep -i '\(centos\)\|\(red\)' /etc/issue)"  ]; then
+      WHENRHEL
+    elif [ "$(grep -i '\(fedora\)\|\(amazon\)' /etc/issue)"  ]; then
       WHENRHEL
     elif [ "$(grep -i '\(debian\)\|\(ubuntu\)' /etc/issue)" ];then
       WHENDEBIAN
@@ -454,20 +461,20 @@ function RSYNCCHECKANDSET() {
   Installation of rsync failed so that means you NEED to install it."
     exit 1
   else
-    RSYNCVERSIONLINE=$(rsync --version | grep -E "version\ [0-9].[0-9].[0-9]")
-    RSYNCVERSIONNUM=$(echo ${RSYNCVERSIONLINE} | awk '{print $3}')
-    RSYNCVERSION=$(echo ${RSYNCVERSIONNUM} | awk -F'.' '{print $1}')
-    if [ "${RSYNCVERSION}" -ge "3" ];then
-      RSYNCVERSIONCOMP="yes"
+    RSYNC_VERSION_LINE=$(rsync --version | grep -E "version\ [0-9].[0-9].[0-9]")
+    RSYNC_VERSION_NUM=$(echo ${RSYNC_VERSION_LINE} | awk '{print $3}')
+    RSYNC_VERSION=$(echo ${RSYNC_VERSION_NUM} | awk -F'.' '{print $1}')
+    if [ "${RSYNC_VERSION}" -ge "3" ];then
+      RSYNC_VERSION_COMP="yes"
     fi
   fi
   
   # Set RSYNC Flags
-  if [ "${RSYNCVERSIONCOMP}" == "yes" ];then 
-    RSYNCFLAGS='aHEAXSzx'
+  if [ "${RSYNC_VERSION_COMP}" == "yes" ];then 
+    RSYNC_FLAGS='aHEAXSzx'
     echo "Using RSYNC <= 3.0.0 Flags."
   else 
-    RSYNCFLAGS='aHSzx'
+    RSYNC_FLAGS='aHSzx'
     echo "Using RSYNC >= 2.0.0 but < 3.0.0 Flags."
   fi
 }
@@ -475,31 +482,34 @@ function RSYNCCHECKANDSET() {
 
 function KEYANDDEPSEND() {
   echo -e "\033[1;36mBuilding Key Based Access for the target host\033[0m"
-  ssh-keygen -t rsa -f ${SSHKEYTEMP} -N ''
+  ssh-keygen -t rsa -f ${SSH_KEY_TEMP} -N ''
 
   # Making backup of known_host
   cp /root/.ssh/known_hosts /root/.ssh/known_hosts.${DATE}.bak
 
   echo -e "Please Enter the Password of the \033[1;33mTARGET\033[0m Server."
-  ssh-copy-id -i ${SSHKEYTEMP} root@${TIP}
+  ssh-copy-id -i ${SSH_KEY_TEMP} root@${TIP}
 
   if [ -f /tmp/intsalldeps.sh ];then
     echo -e "Passing RSYNC Dependencies to the \033[1;33mTARGET\033[0m Server."
-    scp -i ${SSHKEYTEMP} /tmp/intsalldeps.sh root@${TIP}:/root/
+    scp -i ${SSH_KEY_TEMP} /tmp/intsalldeps.sh root@${TIP}:/root/
   fi
 }
 
 function RUNRSYNCCOMMAND() {
+  set +e
   MAX_RETRIES=${MAX_RETRIES:-5}
   RETRY_COUNT=0
 
+  # Set the initial return value to failure
+  false
+
   while [ $? -ne 0 -a ${RETRY_COUNT} -lt ${MAX_RETRIES} ];do
     RETRY_COUNT=$((${RETRY_COUNT}+1))
-    if [ "$(which time)" ];then
-      time ${RSYNC_CMD}
-    else
-      ${RSYNC_CMD}
-    fi
+    ${RSYNC} -e "${RSSH}" -${RSYNC_FLAGS} --progress \
+                                          --exclude-from="${EXCLUDE_FILE}" \
+                                          --exclude "${SSHAUTHKEYFILE}" \
+                                          / root@${TIP}:/
   done
   
   if [ ${RETRY_COUNT} -ge ${MAX_RETRIES} ];then
@@ -508,36 +518,33 @@ function RUNRSYNCCOMMAND() {
 
   unset RSYNC_CMD
   unset MAX_RETRIES
+  set -e
 }
 
 function RUNMAINPROCESS() {
+
   echo -e "\033[1;36mNow performing the Copy\033[0m"
-  RSYNC_CMD="rsync -e \"ssh -i ${SSHKEYTEMP} -o UserKnownHostsFile=/dev/null \
-                                             -o StrictHostKeyChecking=no\" \
-                                             -${RSYNCFLAGS} \
-                                             --progress \
-                                             --exclude-from=\"${EXCLUDEME}\" \
-                                             --exclude \"${SSHAUTHKEYFILE}\" \
-                                             / root@${TIP}:/"
+
+  RSYNC="$(which rsync)"
+  RSSH_OPTIONS="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+  RSSH="ssh -i ${SSH_KEY_TEMP} ${RSSH_OPTIONS}"
+
   RUNRSYNCCOMMAND
 
   echo "Resting for 5 seconds..."
   sleep 5
 
   echo -e "\033[1;36mNow performing Final Sweep\033[0m"
-  RSYNC_CMD="rsync -e \"ssh -i ${SSHKEYTEMP} -o UserKnownHostsFile=/dev/null \
-                                             -o StrictHostKeyChecking=no\" \
-                                             -c${RSYNCFLAGS} \
-                                             --progress \
-                                             --exclude-from=\"${EXCLUDEME}\" \
-                                             --exclude \"${SSHAUTHKEYFILE}\" \
-                                             / root@${TIP}:/"
+
+  RSYNC_FLAGS+="c"
   RUNRSYNCCOMMAND
 }
 
 # Run Script
 # ==============================================================================
 INFLAMMATORY=${INFLAMMATORY:-"False"}
+VERBOSE=${VERBOSE:-"False"}
+DEBUG=${DEBUG:-"False"}
 
 # The Date as generated by the Source System
 DATE=$(date +%y%m%d%H)
@@ -546,31 +553,50 @@ DATE=$(date +%y%m%d%H)
 TEMPDIR='/tmp'
 
 # Name of the Temp SSH Key we will be using.
-SSHKEYTEMP="${TEMPDIR}/tempssh.${DATE}"
+SSH_KEY_TEMP="${TEMPDIR}/tempssh.${DATE}"
 
 # ROOT SSH Key File
 SSHAUTHKEYFILE='/root/.ssh/authorized_keys'
 
 # General Exclude List; The exclude list is space Seperated
-EXCLUDELIST='/boot /dev/ /etc/conf.d/net /etc/fstab /etc/hostname /etc/HOSTNAME 
-/etc/hosts /etc/issue /etc/init.d/nova-agent* /etc/mdadm* /etc/mtab 
-/etc/network* /etc/network/* /etc/networks* /etc/network.d/* /etc/rc.conf 
-/etc/resolv.conf /etc/selinux/config /etc/sysconfig/network* 
+EXCLUDE_LIST='/boot /dev/ /etc/conf.d/net /etc/fstab /etc/hostname 
+/etc/HOSTNAME /etc/hosts /etc/issue /etc/init.d/nova-agent* /etc/mdadm* 
+/etc/mtab /etc/network* /etc/network/* /etc/networks* /etc/network.d/*
+/etc/rc.conf /etc/resolv.conf /etc/selinux/config /etc/sysconfig/network* 
 /etc/sysconfig/network-scripts/* /etc/ssh/ssh_host_dsa_key 
 /etc/ssh/ssh_host_rsa_key /etc/ssh/ssh_host_dsa_key.pub 
 /etc/ssh/ssh_host_rsa_key.pub /etc/udev/rules.d/* /lock /net /sys /tmp 
 /usr/sbin/nova-agent* /usr/share/nova-agent* /var/cache/yum/* '
 
+# Allow the user to add excludes to the general Exclude list
+USER_EXCULDES=${USER_EXCULDES:-""}
+
 # Amazon Exclude List; The exclude list is space Seperated
-AMAZONEXCLUDELIST='/etc/sysctl.conf /etc/yum.repos.d/amzn-*'
+AMAZONEXCLUDE_LIST='/etc/sysctl.conf /etc/yum.repos.d/amzn-*'
 
 # Extra Exclude File 
-EXCLUDEME='/tmp/excludeme.file'
+EXCLUDE_FILE='/tmp/excludeme.file'
 
 # Building Exclude File - DONT TOUCH UNLESS YOU KNOW WHAT YOU ARE DOING
 # ==============================================================================
-EXCLUDEVAR=$(echo ${EXCLUDELIST} | sed 's/\ /\\n/g')
-echo -e "${EXCLUDEVAR}" | tee -a ${EXCLUDEME}
+if [ "${VERBOSE}" == "True" ];then
+  set -v
+fi
+
+if [ "${DEBUG}" == "True" ];then
+  set -x
+fi
+
+EXCLUDEVAR=$(echo ${EXCLUDE_LIST} | sed 's/\ /\\n/g')
+if [ "${USER_EXCULDES}" ];then
+  EXCLUDE_LIST+=${USER_EXCULDES}
+fi
+
+if [ -f ${EXCLUDE_FILE} ];then
+  rm ${EXCLUDE_FILE}
+fi
+
+echo -e "${EXCLUDEVAR}" | tee -a ${EXCLUDE_FILE}
 
 # Check that we are the root User
 CHECKFORROOT
@@ -630,9 +656,9 @@ sed '$ d' /tmp/known_hosts > /root/.ssh/known_hosts
 rm -f /tmp/known_hosts
 
 echo -e "Running Dependency Script on the \033[1;33mTARGET\033[0m Server."
-ssh -i ${SSHKEYTEMP} -o UserKnownHostsFile=/dev/null \
-                     -o StrictHostKeyChecking=no root@${TIP} \
-                     "bash intsalldeps.sh" > /dev/null 2>&1
+ssh -i ${SSH_KEY_TEMP} -o UserKnownHostsFile=/dev/null \
+                       -o StrictHostKeyChecking=no root@${TIP} \
+                       "bash intsalldeps.sh" > /dev/null 2>&1
 
 RUNMAINPROCESS
 
@@ -640,9 +666,9 @@ AMAZONPROCESSES
 
 echo -e "\033[1;36mThe target Instance is being rebooted\033[0m"
 
-ssh -i ${SSHKEYTEMP} -o UserKnownHostsFile=/dev/null \
-                     -o StrictHostKeyChecking=no root@${TIP} \
-                     "shutdown -r now";
+ssh -i ${SSH_KEY_TEMP} -o UserKnownHostsFile=/dev/null \
+                       -o StrictHostKeyChecking=no root@${TIP} \
+                       "shutdown -r now"
 
 echo -e "If you were copying something that was not a Rackspace Cloud Server, 
 You may need to ensure that your setting are correct, and the target is healthy
