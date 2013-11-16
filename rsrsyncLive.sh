@@ -53,32 +53,18 @@ fi
 EOF
 
   cat > /tmp/swappiness.sh <<EOF
+#!/usr/bin/env bash
 SWAPPINESS=\$(sysctl -a | grep vm.swappiness | awk -F' = ' '{print \$2}')
 
 if [ "\${SWAPPINESS}" != 60 ];then
-  if [ "\$(grep '^vm.swappiness$' /etc/sysctl.conf)" ];then
-    sed -i '/vm.swappiness.*/ s/^/#\ /' /etc/sysctl.conf
-  fi
-  sysctl vm.swappiness=60 | tee -a /etc/sysctl.conf
-
-  if [ ! -f "/etc/rc.local" ];then
-    touch /etc/rc.local
-  fi
-
-  if [ "\$(grep 'exit 0' /etc/rc.local)" ];then
-    sed -i '/exit\ 0/ s/^/#\ /' /etc/rc.local
-  fi
-  
-  if [ ! "\$(grep 'swap.sh' /etc/rc.local)" ];then
-    echo "/opt/swap.sh" | tee -a /etc/rc.local
-  fi
+  sysctl vm.swappiness=60
 fi
 EOF
 
   if [ ! "$(swapon -s | grep -v Filename)" ];then
     chmod +x /tmp/swap.sh
-    sysctl vm.swappiness=60
-    /tmp/swap.sh
+    chmod +x /tmp/swappiness.sh
+    /tmp/swap.sh && /tmp/swappiness.sh
   fi
 }
 
