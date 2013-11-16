@@ -4,7 +4,7 @@
 # - description  : This Script Will Migrate Data From one Instance to another
 # - License      : GPLv3
 # - author       : Kevin Carter
-# - date         : 2013-10-26
+# - date         : 2013-11-16
 # - version      : 2.0.0
 # - usage        : bash rsrsyncLive.sh
 # - OS Supported : Ubuntu, Debian, SUSE, Gentoo, RHEL, CentOS, Scientific, Arch
