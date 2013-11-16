@@ -47,15 +47,14 @@ Enable More Verbosity in the script, Default is "False":
 Enable Debug Mode in the Script, Default is "False":
   DEBUG="False or True"
 
-Enable Inflammatory mode, Default is "False":
-  INFLAMMATORY="False or True"
-
 Add Additional Excludes to the script when Performing the Sync. This is a Space separated list, if you have files with spaces in the name you MUST escape them.
   USER_EXCULDES=""
 
-Change the Retry Max before the script will give up, Default is 5.
+Change the Retry Max, Default is 5. This is useful on systems with High Load averages, which can cause the Sync Process to die.
   MAX_RETRIES="5"
 
+Enable Inflammatory mode, Default is "False":
+  INFLAMMATORY="False or True"
   
   
 Estimated time of Completion
