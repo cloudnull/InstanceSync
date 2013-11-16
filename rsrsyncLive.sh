@@ -5,9 +5,9 @@
 # - License      : GPLv3
 # - author       : Kevin Carter
 # - date         : 2013-10-26
-# - version      : 1.4
+# - version      : 2.0.0
 # - usage        : bash rsrsyncLive.sh
-# - OS Supported : Ubuntu, Debian, SUSE, Gentoo, RHEL, CentOS, Arch
+# - OS Supported : Ubuntu, Debian, SUSE, Gentoo, RHEL, CentOS, Scientific, Arch
 # ==============================================================================
 
 
@@ -433,7 +433,7 @@ IP address or preserve your networking .\033[0m
 function DISTROCHECK() {
   # Check the Source Distro
   if [ -f /etc/issue ];then
-    if [ "$(grep -i '\(centos\)\|\(red\)' /etc/issue)"  ]; then
+    if [ "$(grep -i '\(centos\)\|\(red\)|\(scientific\)' /etc/issue)"  ]; then
       WHENRHEL
     elif [ "$(grep -i '\(fedora\)\|\(amazon\)' /etc/issue)"  ]; then
       WHENRHEL
