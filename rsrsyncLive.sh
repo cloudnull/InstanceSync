@@ -634,7 +634,7 @@ EXCLUDE_LIST='/boot /dev/ /etc/conf.d/net /etc/fstab /etc/hostname
 /usr/sbin/nova-agent* /usr/share/nova-agent* /var/cache/yum/* '
 
 # Allow the user to add excludes to the general Exclude list
-USER_EXCULDES=${USER_EXCULDES:-""}
+USER_EXCLUDES=${USER_EXCLUDES:-""}
 
 # Amazon Exclude List; The exclude list is space Seperated
 AMAZONEXCLUDE_LIST='/etc/sysctl.conf /etc/yum.repos.d/amzn-*'
@@ -652,8 +652,8 @@ if [ "${DEBUG}" == "True" ];then
   set -x
 fi
 
-if [ "${USER_EXCULDES}" ];then
-  EXCLUDE_LIST+=${USER_EXCULDES}
+if [ "${USER_EXCLUDES}" ];then
+  EXCLUDE_LIST+=${USER_EXCLUDES}
 fi
 
 EXCLUDEVAR=$(echo ${EXCLUDE_LIST} | sed 's/\ /\\n/g')
