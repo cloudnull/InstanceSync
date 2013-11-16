@@ -1,5 +1,9 @@
-InstanceSync
-============
+InstanceSync, Resource Cloning
+##############################
+:date: 2013-11-12 10:20
+:tags: migrate, clone, sync, rackspace, aws, hpcloud
+:category: \*nix
+
 
 The use cases
 ^^^^^^^^^^^^^
@@ -8,6 +12,7 @@ The use cases
 * Cloning an instance 
 * Upgrading Infrastructures
 * Setting up Geographic Redundancies 
+
 
 What I have tested
 ^^^^^^^^^^^^^^^^^^
@@ -18,17 +23,48 @@ What I have tested
 * Amazon EC2 to the Rackspace Cloud
 * KVM to Rackspace Cloud
 
-Caveats :
-  There are two issues I have found while migrating instances around. However, the most important caveat was related to the instance type.  **You Must Have a Similar Instance to Migrate Too**. Additionally to migrate a linux server from one place to another you must also have setup the instance to use a Single partition for installation.  If you are using a multi-partition virtual instance, you will have to manually migrate the partitions accordingly.  Which can be successfully accomplished by migrating the instance by hand. Other than the one caveat, of having Similar Instance, I have not had this process fail.
 
+Caveats :
+  There are two issues I have found while migrating instances around. However, the most important caveat was related to the instance type.  **You Must Have a Similar Instance to Migrate Too**. 
+  Additionally to migrate a linux server from one place to another you must also have setup the instance to use a Single partition for installation.  
+  If you are using a multi-partition virtual instance, you will have to manually migrate the partitions accordingly.  Which can be successfully accomplished by migrating the instance by hand. 
+  Other than the one caveat, of having Similar Instance, I have not had this process fail.
+
+  
 Testament that It Works :
   I know that this method works for a variety of situations, I have even had this process complete successfully when migrating an instance that uses **Amazon AMI Linux**. 
 
+  
+Available Options
+^^^^^^^^^^^^^^^^^
+
+All options can be set as exports in the environment which the script will use with attempting to perform the Sync Operation.
+
+
+Enable More Verbosity in the script, Default is "False":
+  VERBOSE="False or True"
+
+Enable Debug Mode in the Script, Default is "False":
+  DEBUG="False or True"
+
+Enable Inflammatory mode, Default is "False":
+  INFLAMMATORY="False or True"
+
+Add Additional Excludes to the script when Performing the Sync. This is a Space separated list, if you have files with spaces in the name you MUST escape them.
+  USER_EXCULDES=""
+
+Change the Retry Max before the script will give up, Default is 5.
+  MAX_RETRIES="5"
+
+  
+  
 Estimated time of Completion
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+
 **The Estimated time to completion based on Gigabytes of Consumed Space**
 **Computations have been made using an average transfer rate of 20 Megabytes a second.**
+
 
 ============  ============
     The Estimated time
@@ -45,7 +81,9 @@ Estimated time of Completion
  1200G        1088 Minutes
 ============  ============
 
-Do you want to see the script in Action?
+
+Do you want to see the script in Action:
   I have a screen cast of a migration for a Live Instance to another instance. `You can check it out here`_\.
 
+  
 .. _You can check it out here: http://ascii.io/a/1063
