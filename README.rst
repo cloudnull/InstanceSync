@@ -86,3 +86,11 @@ Do you want to see the script in Action:
 
   
 .. _You can check it out here: http://ascii.io/a/1063
+
+
+Foot Notes
+^^^^^^^^^^
+
+When Performing a sync you should attempt to minimize load on your "Source" machine. The Sync script works great on a live system though if the load is too high it could cause the sync process to die.
+
+When performing a sync on a system with a database, be aware that if you are writing a lot of data to the database you may want to shutdown the database engine while the sync is in process. By shutting down the database you can be sure that all of the data in the database was cloned without any sharding.
