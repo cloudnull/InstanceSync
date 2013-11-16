@@ -34,6 +34,55 @@ use sudo $0 or change to root.
 }
 
 
+# Root user check for install 
+# ==============================================================================
+function CREATE_SWAP() {
+
+  cat > /tmp/swap.sh <<EOF
+#!/usr/bin/env bash
+if [ ! "\$(swapon -s | grep -v Filename)" ];then
+  SWAPFILE="/tmp/SwapFile"
+  if [ -f "\${SWAPFILE}" ];then
+    swapoff -a
+    rm \${SWAPFILE}
+  fi
+  dd if=/dev/zero of=\${SWAPFILE} bs=1M count=2048
+  mkswap \${SWAPFILE}
+  swapon \${SWAPFILE}
+fi
+EOF
+
+  cat > /tmp/swappiness.sh <<EOF
+SWAPPINESS=\$(sysctl -a | grep vm.swappiness | awk -F' = ' '{print \$2}')
+
+if [ "\${SWAPPINESS}" != 60 ];then
+  if [ "\$(grep '^vm.swappiness$' /etc/sysctl.conf)" ];then
+    sed -i '/vm.swappiness.*/ s/^/#\ /' /etc/sysctl.conf
+  fi
+  sysctl vm.swappiness=60 | tee -a /etc/sysctl.conf
+
+  if [ ! -f "/etc/rc.local" ];then
+    touch /etc/rc.local
+  fi
+
+  if [ "\$(grep 'exit 0' /etc/rc.local)" ];then
+    sed -i '/exit\ 0/ s/^/#\ /' /etc/rc.local
+  fi
+  
+  if [ ! "\$(grep 'swap.sh' /etc/rc.local)" ];then
+    echo "/opt/swap.sh" | tee -a /etc/rc.local
+  fi
+fi
+EOF
+
+  if [ ! "$(swapon -s | grep -v Filename)" ];then
+    chmod +x /tmp/swap.sh
+    sysctl vm.swappiness=60
+    /tmp/swap.sh
+  fi
+}
+
+
 # Trap a CTRL-C Command 
 # ==============================================================================
 function CONTROL_C() {
@@ -59,7 +108,7 @@ function QUIT() {
   set -v
 
   echo 'Removing Temp Files'
-  GENFILES="/tmp/intsalldeps.sh /tmp/known_hosts /tmp/postopfix.sh"
+  GENFILES="/tmp/intsalldeps.sh /tmp/known_hosts /tmp/postopfix.sh /tmp/swap.sh"
 
   for temp_file in ${EXCLUDE_FILE} ${GENFILES} ${SSH_KEY_TEMP};do 
     [ -f ${temp_file} ] && rm ${temp_file}
@@ -338,9 +387,11 @@ function WHENRHEL() {
 
   yum -y install rsync
 
-  echo "# RHEL Dep Script
+  cat > /tmp/intsalldeps.sh <<EOF
+#!/usr/bin/env bash
+# RHEL Dep Script
 yum -y install rsync
-" | tee /tmp/intsalldeps.sh
+EOF
 
   if [ "${INFLAMMATORY}" == "True" ];then 
     echo -e "It seems that you may be victim of poor life decisions, judging by 
@@ -361,10 +412,12 @@ function WHENDEBIAN() {
   echo "Installing rsync Package."
   apt-get -y install rsync > /dev/null 2>&1
 
-  echo -e "# Debian Dep Script
+  cat > /tmp/intsalldeps.sh <<EOF
+#!/usr/bin/env bash
+# Debian Dep Script
 apt-get update > /dev/null 2>&1
 apt-get -y install rsync > /dev/null 2>&1
-" | tee /tmp/intsalldeps.sh
+EOF
 
 if [ "${INFLAMMATORY}" == "True" ];then 
     echo -e "Great choice by choosing a Debian Based Distro. 
@@ -378,9 +431,11 @@ The Debian way is by far the best way.";
 function WHENSUSE() {
   echo -e "\033[1;31mSUSE Based System Detected\033[0m"
   zypper in rsync
-  echo "# SUSE Dep Script
+  cat > /tmp/intsalldeps.sh <<EOF
+#!/usr/bin/env bash
+# SUSE Dep Script
 zypper -n in rsync
-" | tee /tmp/intsalldeps.sh
+EOF
 
   if [ "${INFLAMMATORY}" == "True" ];then 
     echo -e "I like SUSE Linux, and you should too.
@@ -483,6 +538,8 @@ function RSYNCCHECKANDSET() {
 }
 
 
+# Dep Scripts
+# ==============================================================================
 function KEYANDDEPSEND() {
   echo -e "\033[1;36mBuilding Key Based Access for the target host\033[0m"
   ssh-keygen -t rsa -f ${SSH_KEY_TEMP} -N ''
@@ -497,6 +554,27 @@ function KEYANDDEPSEND() {
     echo -e "Passing RSYNC Dependencies to the \033[1;33mTARGET\033[0m Server."
     scp -i ${SSH_KEY_TEMP} /tmp/intsalldeps.sh root@${TIP}:/root/
   fi
+
+  if [ -f /tmp/swap.sh ];then
+    echo -e "Passing  Swap script to the \033[1;33mTARGET\033[0m Server."
+    scp -i ${SSH_KEY_TEMP} /tmp/swap.sh root@${TIP}:/root/
+  fi
+  
+  if [ -f /tmp/swappiness.sh ];then
+    echo -e "Passing  Swappiness script to the \033[1;33mTARGET\033[0m Server."
+    scp -i ${SSH_KEY_TEMP} /tmp/swappiness.sh root@${TIP}:/root/
+  fi
+}
+
+
+# Commands 
+# ==============================================================================
+function RUNPREPROCESS() {
+  echo -e "Running Dependency Scripts on the \033[1;33mTARGET\033[0m Server."
+  SCRIPTS="bash swap.sh && bash swappiness.sh && bash intsalldeps.sh"
+  ssh -i ${SSH_KEY_TEMP} -o UserKnownHostsFile=/dev/null \
+                         -o StrictHostKeyChecking=no root@${TIP} \
+                         "${SCRIPTS}" > /dev/null 2>&1
 }
 
 function RUNRSYNCCOMMAND() {
@@ -588,10 +666,11 @@ if [ "${DEBUG}" == "True" ];then
   set -x
 fi
 
-EXCLUDEVAR=$(echo ${EXCLUDE_LIST} | sed 's/\ /\\n/g')
 if [ "${USER_EXCULDES}" ];then
   EXCLUDE_LIST+=${USER_EXCULDES}
 fi
+
+EXCLUDEVAR=$(echo ${EXCLUDE_LIST} | sed 's/\ /\\n/g')
 
 if [ -f ${EXCLUDE_FILE} ];then
   rm ${EXCLUDE_FILE}
@@ -642,6 +721,9 @@ GETDRIVE2
 # check what distro we are running on
 DISTROCHECK
 
+# Make sure we can swap 
+CREATE_SWAP
+
 # Check RSYNC version and set the in use flags
 RSYNCCHECKANDSET
 
@@ -656,11 +738,8 @@ cp /root/.ssh/known_hosts /tmp/known_hosts
 sed '$ d' /tmp/known_hosts > /root/.ssh/known_hosts
 rm -f /tmp/known_hosts
 
-echo -e "Running Dependency Script on the \033[1;33mTARGET\033[0m Server."
-ssh -i ${SSH_KEY_TEMP} -o UserKnownHostsFile=/dev/null \
-                       -o StrictHostKeyChecking=no root@${TIP} \
-                       "bash intsalldeps.sh" > /dev/null 2>&1
-
+RUNPREPROCESS
+                       
 RUNMAINPROCESS
 
 AMAZONPROCESSES
