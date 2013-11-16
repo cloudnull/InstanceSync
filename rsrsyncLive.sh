@@ -64,6 +64,8 @@ function QUIT() {
   for temp_file in ${EXCLUDE_FILE} ${GENFILES} ${SSH_KEY_TEMP};do 
     [ -f ${temp_file} ] && rm ${temp_file}
   done
+
+  set +v
 }
 
 function EXIT_ERROR() {
@@ -85,9 +87,11 @@ function ALLDONE() {
     echo -e "I hope you enjoyed all of my hard work..."
   fi
 
-  echo -e "Stop by \033[1;36mhttps://github.com/cloudnull\033[0m or 
-\033[1;36mhttp://cloudnull.io\033[0m for more 
-random and sometimes helpful tidbits...
+  GITHUBADDR="\033[1;36mhttps://github.com/cloudnull\033[0m"
+  WEBADDR="\033[1;36mhttp://cloudnull.io\033[0m"
+  
+  echo -e "
+Stop by ${GITHUBADDR} or ${WEBADDR} for other random tidbits...
 "
 
   if [ "${INFLAMMATORY}" == "True" ];then 
@@ -339,10 +343,9 @@ yum -y install rsync
 " | tee /tmp/intsalldeps.sh
 
   if [ "${INFLAMMATORY}" == "True" ];then 
-    echo -e "I hope you realize that you have made a BAD choice with the RHEL 
-variety, RHEL is terrible, you would be better off doing a manual migration.
-But I am going ahead with the deployment so dont worry. Linux. due to your 
-poor choice of Linux distributions.
+    echo -e "It seems that you may be victim of poor life decisions, judging by 
+your use of RHEL. While I hate having to do this, I am going ahead with the 
+sync and so don't worry I tested on RHEL even if I hated every moment of it.
 "
   fi
 }
@@ -510,13 +513,14 @@ function RUNRSYNCCOMMAND() {
                                           --exclude-from="${EXCLUDE_FILE}" \
                                           --exclude "${SSHAUTHKEYFILE}" \
                                           / root@${TIP}:/
+    echo "Resting for 5 seconds..."
+    sleep 5
   done
   
   if [ ${RETRY_COUNT} -ge ${MAX_RETRIES} ];then
     EXIT_ERROR "Hit maximum number of retries, giving up."
   fi
 
-  unset RSYNC_CMD
   unset MAX_RETRIES
   set -e
 }
@@ -531,12 +535,9 @@ function RUNMAINPROCESS() {
 
   RUNRSYNCCOMMAND
 
-  echo "Resting for 5 seconds..."
-  sleep 5
-
   echo -e "\033[1;36mNow performing Final Sweep\033[0m"
 
-  RSYNC_FLAGS+="c"
+  RSYNC_FLAGS="${RSYNC_FLAGS} --checksum"
   RUNRSYNCCOMMAND
 }
 
