@@ -531,7 +531,9 @@ function KEYANDDEPSEND() {
   ssh-keygen -t rsa -f ${SSH_KEY_TEMP} -N ''
 
   # Making backup of known_host
-  cp /root/.ssh/known_hosts /root/.ssh/known_hosts.${DATE}.bak
+  if [ -f "/root/.ssh/known_hosts" ];then
+    cp /root/.ssh/known_hosts /root/.ssh/known_hosts.${DATE}.bak
+  fi
 
   echo -e "Please Enter the Password of the \033[1;33mTARGET\033[0m Server."
   ssh-copy-id -i ${SSH_KEY_TEMP} root@${TIP}
@@ -720,9 +722,10 @@ KEYANDDEPSEND
 AMAZONPOSTPROCESSES
 
 # Removing known_host entry made by script
-cp /root/.ssh/known_hosts /tmp/known_hosts
-sed '$ d' /tmp/known_hosts > /root/.ssh/known_hosts
-rm -f /tmp/known_hosts
+if [ -f "/root/.ssh/known_hosts" ];then
+  cp /root/.ssh/known_hosts /tmp/known_hosts
+  sed '$ d' /tmp/known_hosts > /root/.ssh/known_hosts
+fi
 
 RUNPREPROCESS
                        
