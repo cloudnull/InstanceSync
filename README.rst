@@ -1,8 +1,9 @@
 InstanceSync, Resource Cloning
 ##############################
-:date: 2013-11-12 10:20
+:date: 2013-11-16
 :tags: migrate, clone, sync, rackspace, aws, hpcloud
 :category: \*nix
+:version: 2.0.0
 
 
 The use cases
