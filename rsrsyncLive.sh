@@ -41,12 +41,13 @@ function CREATE_SWAP() {
   cat > /tmp/swap.sh <<EOF
 #!/usr/bin/env bash
 if [ ! "\$(swapon -s | grep -v Filename)" ];then
-  SWAPFILE="/tmp/SwapFile"
+  SWAPFILE="/SwapFile"
   if [ -f "\${SWAPFILE}" ];then
     swapoff -a
     rm \${SWAPFILE}
   fi
-  dd if=/dev/zero of=\${SWAPFILE} bs=1M count=2048
+  dd if=/dev/zero of=\${SWAPFILE} bs=1M count=1024
+  chmod 600 \${SWAPFILE}
   mkswap \${SWAPFILE}
   swapon \${SWAPFILE}
 fi
