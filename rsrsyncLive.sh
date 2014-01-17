@@ -1,14 +1,14 @@
 #!/bin/bash
-# ==============================================================================
+# =============================================================================
 # - title        : Migrating Servers Using RSYNC
 # - description  : This Script Will Migrate Data From one Instance to another
 # - License      : GPLv3
 # - author       : Kevin Carter
 # - date         : 2013-11-16
-# - version      : 2.0.0
+# - version      : 2.0.1
 # - usage        : bash rsrsyncLive.sh
 # - OS Supported : Ubuntu, Debian, SUSE, Gentoo, RHEL, CentOS, Scientific, Arch
-# ==============================================================================
+# =============================================================================
 
 
 
@@ -21,7 +21,7 @@ set -u
 set -e
 
 # Root user check for install 
-# ==============================================================================
+# =============================================================================
 function CHECKFORROOT() {
   USERCHECK=$( whoami  )
   if [ "$(id -u)" != "0" ]; then
@@ -35,7 +35,7 @@ use sudo $0 or change to root.
 
 
 # Root user check for install 
-# ==============================================================================
+# =============================================================================
 function CREATE_SWAP() {
 
   cat > /tmp/swap.sh <<EOF
@@ -70,7 +70,7 @@ EOF
 
 
 # Trap a CTRL-C Command 
-# ==============================================================================
+# =============================================================================
 function CONTROL_C() {
   set +e
   echo -e "
@@ -88,7 +88,7 @@ function CONTROL_C() {
 
 
 # Tear down
-# ==============================================================================
+# =============================================================================
 function QUIT() {
   set +e
   set -v
@@ -114,7 +114,7 @@ Here is what I know: $@
 
 
 # Say  something nice and exit
-# ==============================================================================
+# =============================================================================
 function ALLDONE() {
   echo "all Done."
 
@@ -138,7 +138,7 @@ I perfer cold \033[1;33mBeer\033[0m But I will normally drink anything.  :)
 
 
 # Check to see if this is an Amazon Server Migrating to the Rackspace Cloud
-# ==============================================================================
+# =============================================================================
 function ISTHISAMAZON() {
   KERNELTYPE=$(uname -r | head -n 1)
   if [ "$(echo "${KERNELTYPE}" | grep -i amzn)" ];then
@@ -248,7 +248,7 @@ to a more Open Source Platform.
 }
 
 # Amazon Specific Processes 
-# ==============================================================================
+# =============================================================================
 function AMAZONPROCESSES() {
   if [ "${AK}" == "YES" ];then
     echo -e "\033[1;36mNow performing Amazon Specific Processes\033[0m"
@@ -284,7 +284,7 @@ yum install ${TARGET_OS_TYPE}-release"
 }
 
 # Post Migration script for Amazon AMI Linux
-# ==============================================================================
+# =============================================================================
 function AMAZONPOSTPROCESSES() {
   if [ "${AK}" == "YES" ];then
     echo -e "# Post Migration Script
@@ -316,7 +316,7 @@ times things happen which can cause incompatibilities.
 }
 
 # Set the Source and Origin Drives
-# ==============================================================================
+# =============================================================================
 function GETDRIVE1() {
   read -p "
 Press [Enter] to Continue accepting the normal Rackspace Defaults 
@@ -345,7 +345,7 @@ type correctly.
 
 
 # Get the Target IP
-# ==============================================================================
+# =============================================================================
 function GETTIP() {
   MAX_RETRIES=${MAX_RETRIES:-5}
   RETRY_COUNT=0
@@ -367,7 +367,7 @@ function GETTIP() {
 
 
 # When RHEL-ish Distros are detected
-# ==============================================================================
+# =============================================================================
 function WHENRHEL() {
   echo -e "\033[1;31mRHEL Based System Detected\033[0m Installing rsync."
 
@@ -388,7 +388,7 @@ sync and so don't worry I tested on RHEL even if I hated every moment of it.
 }
 
 # When Debian based distros
-# ==============================================================================
+# =============================================================================
 function WHENDEBIAN() {
   echo -e "\033[1;31mDebian Based System Detected\033[0m"
 
@@ -413,7 +413,7 @@ The Debian way is by far the best way.";
 }
 
 # When SUSE
-# ==============================================================================
+# =============================================================================
 function WHENSUSE() {
   echo -e "\033[1;31mSUSE Based System Detected\033[0m"
   zypper in rsync
@@ -432,7 +432,7 @@ Its not as good as Debian But WAY  better than ANYTHING RHEL.
 }
 
 # When Gentoo
-# ==============================================================================
+# =============================================================================
 function WHENGENTOO() {
   echo -e "\033[1;31mGentoo Based System Detected\033[0m"
   if [ "${INFLAMMATORY}" == "True" ];then 
@@ -445,7 +445,7 @@ User, you should have more pride and do it all by hand...
 }
 
 # When Arch
-# ==============================================================================
+# =============================================================================
 function WHENARCH() {
   echo -e "\033[1;31mArch Based System Detected\033[0m"
   if [ "${INFLAMMATORY}" == "True" ];then 
@@ -457,20 +457,31 @@ Anything... And you think your different...
 }
 
 # When UNKNOWN
-# ==============================================================================
+# =============================================================================
 function WHENUNKNOWN() {
-  echo "Because I could not determine the OS type you will have to"
-  echo -e "\033[1;31mLogin to the target OS while in rescue mode, and fix the 
-IP address or preserve your networking .\033[0m
+    echo -e "
+\033[1;31mWARNING! \033[0m
+I could not determine your OS Type. This Application has only been tested on : 
+\033[1;31mDebian\033[0m, \
+\033[1;31mUbuntu\033[0m, \
+\033[1;31mFedora\033[0m, \
+\033[1;31mCentOS\033[0m, \
+\033[1;31mRHEL\033[0m, \
+\033[1;31mSUSE\033[0m, \
+\033[1;31mGentoo\033[0m, \
+and \033[1;31mArch\033[0m.
+You may need to edit the file '\033[1;31m/etc/issue\033[0m' in an effort to
+correct the OS detection issues
 "
   if [ "${INFLAMMATORY}" == "True" ];then 
       echo -e "Basically I have no IDEA what to do with you..."
       sleep 2
   fi
+  exit 1
 }
 
 # Do Distro Check
-# ==============================================================================
+# =============================================================================
 function DISTROCHECK() {
   # Check the Source Distro
   if [ -f /etc/issue ];then
@@ -482,23 +493,21 @@ function DISTROCHECK() {
       WHENDEBIAN
     elif [ "$(grep -i '\(suse\)' /etc/issue)" ];then
       WHENSUSE
-    elif [ "$(grep -i '\(arch\)')" ];then
+    elif [ "$(grep -i '\(arch\)' /etc/issue)" ];then
       WHENARCH
+    else
+      WHENUNKNOWN
     fi
   elif [ -f /etc/gentoo-release ];then
-    WHENARCH
+    WHENGENTOO
   else 
-    echo -e "WARNING!! I could not determine your OS Type. This Application has 
-only been tested on : 
-\033[1;31mDebian, Ubuntu, Fedora, CentOS, RHEL, SUSE, Gentoo, and Arch\033[0m
-"
     WHENUNKNOWN
   fi
 }
 
 
 # RSYNC Check for Version and Set Flags
-# ==============================================================================
+# =============================================================================
 function RSYNCCHECKANDSET() {
   if [ ! $(which rsync) ];then
     echo -e "The \033[1;36m\"rsync\"\033[0m command was not found. The automatic 
@@ -525,7 +534,7 @@ function RSYNCCHECKANDSET() {
 
 
 # Dep Scripts
-# ==============================================================================
+# =============================================================================
 function KEYANDDEPSEND() {
   echo -e "\033[1;36mBuilding Key Based Access for the target host\033[0m"
   ssh-keygen -t rsa -f ${SSH_KEY_TEMP} -N ''
@@ -556,10 +565,12 @@ function KEYANDDEPSEND() {
 
 
 # Commands 
-# ==============================================================================
+# =============================================================================
 function RUNPREPROCESS() {
   echo -e "Running Dependency Scripts on the \033[1;33mTARGET\033[0m Server."
-  SCRIPTS="bash swap.sh && bash swappiness.sh && bash intsalldeps.sh"
+  SCRIPTS='[ -f "swap.sh" ] && bash swap.sh;
+           [ -f "swappiness.sh" ] && bash swappiness.sh;
+           [ -f "intsalldeps.sh" ] && bash intsalldeps.sh'
   ssh -i ${SSH_KEY_TEMP} -o UserKnownHostsFile=/dev/null \
                          -o StrictHostKeyChecking=no root@${TIP} \
                          "${SCRIPTS}" > /dev/null 2>&1
@@ -608,7 +619,7 @@ function RUNMAINPROCESS() {
 }
 
 # Run Script
-# ==============================================================================
+# =============================================================================
 INFLAMMATORY=${INFLAMMATORY:-"False"}
 VERBOSE=${VERBOSE:-"False"}
 DEBUG=${DEBUG:-"False"}
@@ -645,7 +656,7 @@ AMAZONEXCLUDE_LIST='/etc/sysctl.conf /etc/yum.repos.d/amzn-*'
 EXCLUDE_FILE='/tmp/excludeme.file'
 
 # Building Exclude File - DONT TOUCH UNLESS YOU KNOW WHAT YOU ARE DOING
-# ==============================================================================
+# =============================================================================
 if [ "${VERBOSE}" == "True" ];then
   set -v
 fi
