@@ -486,7 +486,7 @@ correct the OS detection issues
 function DISTROCHECK() {
   # Check the Source Distro
   if [ -f /etc/issue ];then
-    if [ "$(grep -i '\(centos\)\|\(red\)|\(scientific\)' /etc/issue)"  ]; then
+    if [ "$(grep -i '\(centos\)\|\(red\)\|\(scientific\)' /etc/issue)"  ]; then
       WHENRHEL
     elif [ "$(grep -i '\(fedora\)\|\(amazon\)' /etc/issue)"  ]; then
       WHENRHEL
