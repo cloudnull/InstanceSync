@@ -3,7 +3,7 @@ InstanceSync, Resource Cloning
 :date: 2013-11-16
 :tags: migrate, clone, sync, rackspace, aws, hpcloud
 :category: \*nix
-:version: 2.0.0
+:version: 2.0.1
 
 
 The use cases
@@ -26,7 +26,7 @@ What I have tested
 
 
 Caveats :
-  There are two issues I have found while migrating instances around. However, the most important caveat was related to the instance type.  **You Must Have a Similar Instance to Migrate Too**. 
+  There are two issues I have found while migrating instances around. However, the most important caveat was related to the instance type.  **You Must Have a Similar Instance to Migrate To**. 
   Additionally to migrate a linux server from one place to another you must also have setup the instance to use a Single partition for installation.  
   If you are using a multi-partition virtual instance, you will have to manually migrate the partitions accordingly.  Which can be successfully accomplished by migrating the instance by hand. 
   Other than the one caveat, of having Similar Instance, I have not had this process fail.
