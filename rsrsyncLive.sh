@@ -645,7 +645,7 @@ EXCLUDE_LIST='/boot /dev/ /etc/conf.d/net /etc/fstab /etc/hostname
 /etc/sysconfig/network-scripts/* /etc/ssh/ssh_host_dsa_key 
 /etc/ssh/ssh_host_rsa_key /etc/ssh/ssh_host_dsa_key.pub 
 /etc/ssh/ssh_host_rsa_key.pub /etc/udev/rules.d/* /lock /net /sys /tmp 
-/usr/sbin/nova-agent* /usr/share/nova-agent* /var/cache/yum/* '
+/usr/sbin/nova-agent* /usr/share/nova-agent* /var/cache/yum/* /SwapFile'
 
 # Allow the user to add excludes to the general Exclude list
 USER_EXCLUDES=${USER_EXCLUDES:-""}
