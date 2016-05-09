@@ -486,7 +486,7 @@ correct the OS detection issues
 function DISTROCHECK() {
   # Check the Source Distro
   if [ -f /etc/issue ];then
-    if [ "$(grep -i '\(centos\)\|\(red\)\|\(scientific\)' /etc/issue)"  ]; then
+    if [ "$(grep -i '\(centos\)\|\(red\)\|\(scientific\)' /etc/redhat-release)"  ]; then
       WHENRHEL
     elif [ "$(grep -i '\(fedora\)\|\(amazon\)' /etc/issue)"  ]; then
       WHENRHEL
@@ -642,9 +642,8 @@ EXCLUDE_LIST='/boot /dev/ /etc/conf.d/net /etc/fstab /etc/hostname
 /etc/HOSTNAME /etc/hosts /etc/issue /etc/init.d/nova-agent* /etc/mdadm* 
 /etc/mtab /etc/network* /etc/network/* /etc/networks* /etc/network.d/*
 /etc/rc.conf /etc/resolv.conf /etc/selinux/config /etc/sysconfig/network* 
-/etc/sysconfig/network-scripts/* /etc/ssh/ssh_host_dsa_key 
-/etc/ssh/ssh_host_rsa_key /etc/ssh/ssh_host_dsa_key.pub 
-/etc/ssh/ssh_host_rsa_key.pub /etc/udev/rules.d/* /lock /net /sys /tmp 
+/etc/sysconfig/network-scripts/* /etc/ssh/ssh_host_*
+/etc/udev/rules.d/* /lock /net /sys /tmp 
 /usr/sbin/nova-agent* /usr/share/nova-agent* /var/cache/yum/* /SwapFile'
 
 # Allow the user to add excludes to the general Exclude list
@@ -749,7 +748,7 @@ echo -e "\033[1;36mThe target Instance is being rebooted\033[0m"
 
 ssh -i ${SSH_KEY_TEMP} -o UserKnownHostsFile=/dev/null \
                        -o StrictHostKeyChecking=no root@${TIP} \
-                       "shutdown -r now"
+                       "shutdown -r now &"
 
 echo -e "If you were copying something that was not a Rackspace Cloud Server, 
 You may need to ensure that your setting are correct, and the target is healthy
