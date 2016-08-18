@@ -86,7 +86,7 @@ Do you want to see the script in Action:
   I have a screen cast of a migration for a Live Instance to another instance. `You can check it out here`_\.
 
   
-.. _You can check it out here: http://ascii.io/a/1063
+.. _You can check it out here: https://asciinema.org/a/1063
 
 
 Foot Notes
